@@ -1,4 +1,5 @@
-﻿
+﻿using Spectre.Console;
+
 namespace CodingTracker
 {
     public class Program
@@ -6,8 +7,7 @@ namespace CodingTracker
         static void Main(string[] args)
         {
             Database.CreateDatabase();
-
-
+            CodingTrackerController.Menu();
         }
     }
    

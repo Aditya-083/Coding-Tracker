@@ -1,33 +1,41 @@
 ﻿using Dapper;
-using System;
 using System.Data.SQLite;
 using System.Xml;
 
-namespace CodingTracker
+namespace CodingTracker 
 {
-    internal class Database
+    internal class Database : Validation
     {
-        private static string connectionString;
-
-        public Database(){
-            CreateDatabase();
-        }
         public static void ViewRecords()
         {
+            using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+            {
+                connection.Open();
 
+                // Query the database and map the results to CodingSessionModel
+                IEnumerable<CodingSessionModel> sessions = connection.Query<CodingSessionModel>("SELECT * FROM CodingTracker");
+
+                foreach (var session in sessions)
+                {
+                    Console.WriteLine($"Session ID: {session.Id}");
+                    Console.WriteLine($"Start Time: {session.StartTime}");
+                    Console.WriteLine($"End Time: {session.EndTime}");
+                    Console.WriteLine($"Duration: {session.Duration}");
+                    Console.WriteLine($"Date: {session.CodingDate}");
+                    Console.WriteLine();
+                }
+
+                connection.Close();
+            }
         }
-
         public static void InsertRecord()
         {
             using (SQLiteConnection connection = new SQLiteConnection(connectionString))
             {
                 connection.Open();
-                TimeOnly STime = TimeOnly.FromDateTime(DateTime.Now);
-                TimeOnly ETime = STime.Add(new TimeSpan(1, 15, 0));
-                TimeSpan Duration = new TimeSpan(1, 15, 0);
-                DateOnly Date = DateOnly.FromDateTime(DateTime.Now);
+                ValidateInput();
                 connection.Execute("INSERT INTO CodingTracker(StartTime, EndTime, Duration, CodingDate) VALUES (@StartTime, @EndTime, @Duration, @Date)",
-                new { StartTime = STime.ToString(), EndTime = ETime.ToString(), Duration = Duration.ToString(), Date = Date.ToString() });
+                new { StartTime = StartTime.ToString(), EndTime = EndTime.ToString(), Duration = Duration.ToString(), Date = Date.ToString() });
 
                 connection.Close();
             }
@@ -35,37 +43,43 @@ namespace CodingTracker
 
         public static void DeleteRecord()
         {
-            
+            Console.WriteLine("Enter the id of record you want to Delete:");
+            if (ValidateSessionId())
+            {
+                using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+                {
+                    connection.Open();
+                    connection.Execute("DELETE FROM CodingTracker WHERE Id = @id", new { id });
+                    connection.Close();
+                }
+            }
         }
 
         public static void UpdateRecord()
         {
-            using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+            Console.WriteLine("enter the id of record you want to update:");
+            if (ValidateSessionId())
             {
-                connection.Open();
-                int id;
-                Console.WriteLine("Enter the id of record you want to Update:");
-                var input = Console.ReadLine();
-                while (!int.TryParse(input, out id))
+                ValidateInput();
+                using (SQLiteConnection connection = new SQLiteConnection(connectionString))
                 {
-                    Console.WriteLine("Invalid input pls enter integer value.");
-                    input = Console.ReadLine();
+                    connection.Open();
+                    string sql = @"UPDATE CodingTracker SET StartTime = @StartTime, EndTime = @EndTime, Duration = @Duration, CodingDate = @CodingDate WHERE Id = @Id";
+
+                    int rowsAffected = connection.Execute(sql, new
+                    { 
+                        StartTime = StartTime.ToString(),
+                        EndTime = EndTime.ToString(),
+                        Duration = Duration.ToString(),
+                        CodingDate = Date.ToString(),
+                        Id = id
+                    });
+
+                    Console.WriteLine($"{rowsAffected} rows updated.");
+
+                    connection.Close();
                 }
-               
-                int count = connection.ExecuteScalar<int>("SELECT COUNT(*) FROM CodingTracker WHERE Id = @Id", new { Id = id });
-
-                if (count <= 0)
-                {
-                    Console.WriteLine("The given id is not present in the database. Press any key to continue.");
-                    Console.ReadLine();
-                    return;
-                }
-
-                Console.WriteLine(count);
-                Console.ReadLine();
-
-                connection.Close();
-            }
+            }   
         }
 
         public static void CreateDatabase()
@@ -83,7 +97,7 @@ namespace CodingTracker
                     {
                         connection.Open();
                   
-                        connection.Execute(@"CREATE TABLE CodingTracker (Id INTEGER PRIMARY KEY, StartTime TimeOnly, EndTime TimeOnly, Duration TimeSpan,CodingDate DateOnly)");
+                        connection.Execute(@"CREATE TABLE CodingTracker (Id INTEGER PRIMARY KEY, StartTime TEXT, EndTime TEXT, Duration TEXT,CodingDate TEXT)");
 
                         connection.Close();
                     }
@@ -94,6 +108,30 @@ namespace CodingTracker
                 Console.WriteLine(ex);
                 Console.ReadLine();
             }
+        }
+
+        public static bool ValidateSessionId()
+        {
+            var input = Console.ReadLine();
+            using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+            {
+                connection.Open();
+                while (!int.TryParse(input, out id))
+                {
+                    Console.WriteLine("Invalid input pls enter integer value.");
+                    input = Console.ReadLine();
+                }
+                count = connection.ExecuteScalar<int>("SELECT COUNT(*) FROM CodingTracker WHERE Id = @Id", new { Id = id });
+                connection.Close();
+            }
+            if (count <= 0)
+            {
+                Console.WriteLine("The given id is not present in the database. Press any key to continue.");
+                Console.ReadLine();
+                return false;
+            }
+            return true;
+
         }
     }
 }
