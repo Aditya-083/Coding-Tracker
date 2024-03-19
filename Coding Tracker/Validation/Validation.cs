@@ -1,12 +1,13 @@
 ﻿using System;
+using System.Globalization;
 
 namespace CodingTracker
 {
     internal class Validation
     {
-        protected static string connectionString;
+       
         protected static int id, count;
-        protected static TimeOnly StartTime, EndTime;
+        protected static TimeOnly StartTime, EndTime,Time;
         protected static TimeSpan Duration;
         protected static DateOnly Date;
         protected static string UserInput;
@@ -46,44 +47,46 @@ namespace CodingTracker
             return duration;
         }
 
-        public static void ValidateInput()
+        public static bool ValidateStartTime(string time)
         {
-            while (true)
+            if (TryParseTime(time, out Time))
             {
-                Console.WriteLine("Enter the Start-time in the format HH:mm (e.g., 12:30):");
-                UserInput = Console.ReadLine();
-                if (TryParseTime(UserInput, out StartTime))
-                    break;
-                Console.WriteLine("Invalid time format. Please try again.");
+                StartTime = Time;
+                return true;
             }
+            return false;
+        }
 
-            while (true)
+        public static bool ValidateEndTime(string time)
+        {
+            if (TryParseTime(time, out Time))
             {
-                Console.WriteLine("Enter the End-time in the format HH:mm (e.g., 12:45):");
-                UserInput = Console.ReadLine();
-                if (TryParseTime(UserInput, out EndTime))
+                if (Time > StartTime)
                 {
-                    if (EndTime > StartTime)
-                        break;
-                    else
-                        Console.WriteLine("End Time should be greater than start time. Please try again.");
+                    EndTime = Time;
+                    return true;
                 }
-                else
-                    Console.WriteLine("Invalid time format. Please try again.");
             }
+            return false;
+        }
 
-            Duration = CalculateTimeSpan(StartTime, EndTime);
+        public static string TotalTime()
+        {
+            return CalculateTimeSpan(StartTime, EndTime).ToString();
+        }
 
-            while (true)
-            {
-                Console.WriteLine("Enter a date in the format yyyy-MM-dd (e.g., 2024-03-14):");
-                UserInput = Console.ReadLine();
+        public static bool ValidateDate(string date)
+        {
+            if (TryParseDate(UserInput, out Date))
+                return true;
+            return false;
+        }
 
-                if (TryParseDate(UserInput, out Date))
-                    break;
-
-                Console.WriteLine("Invalid date format. Please try again.");
-            }
-        }        
+        public static bool ValidateInteger(string SessionId)
+        {
+            if (int.TryParse(SessionId, out id))
+                return true;
+            return false;
+        }
     }
 }

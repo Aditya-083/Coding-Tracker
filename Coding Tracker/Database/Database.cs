@@ -4,47 +4,36 @@ using System.Xml;
 
 namespace CodingTracker 
 {
-    internal class Database : Validation
+    internal class Database
     {
-        public static void ViewRecords()
+        public static int count;
+        protected static string connectionString;
+        public static IEnumerable<CodingSessionModel> ViewRecords()
         {
             using (SQLiteConnection connection = new SQLiteConnection(connectionString))
             {
                 connection.Open();
-
                 // Query the database and map the results to CodingSessionModel
                 IEnumerable<CodingSessionModel> sessions = connection.Query<CodingSessionModel>("SELECT * FROM CodingTracker");
-
-                foreach (var session in sessions)
-                {
-                    Console.WriteLine($"Session ID: {session.Id}");
-                    Console.WriteLine($"Start Time: {session.StartTime}");
-                    Console.WriteLine($"End Time: {session.EndTime}");
-                    Console.WriteLine($"Duration: {session.Duration}");
-                    Console.WriteLine($"Date: {session.CodingDate}");
-                    Console.WriteLine();
-                }
-
                 connection.Close();
+                return sessions;
             }
         }
-        public static void InsertRecord()
+        public static void InsertRecord(CodingSessionModel record)
         {
             using (SQLiteConnection connection = new SQLiteConnection(connectionString))
             {
                 connection.Open();
-                ValidateInput();
                 connection.Execute("INSERT INTO CodingTracker(StartTime, EndTime, Duration, CodingDate) VALUES (@StartTime, @EndTime, @Duration, @Date)",
-                new { StartTime = StartTime.ToString(), EndTime = EndTime.ToString(), Duration = Duration.ToString(), Date = Date.ToString() });
+                new { StartTime = record.StartTime.ToString(), EndTime = record.EndTime.ToString(), Duration = record.Duration.ToString(), Date = record.CodingDate.ToString() });
 
                 connection.Close();
             }
         }
 
-        public static void DeleteRecord()
+        public static void DeleteRecord(int id, bool IsSessionValidated)
         {
-            Console.WriteLine("Enter the id of record you want to Delete:");
-            if (ValidateSessionId())
+            if (IsSessionValidated)
             {
                 using (SQLiteConnection connection = new SQLiteConnection(connectionString))
                 {
@@ -55,31 +44,34 @@ namespace CodingTracker
             }
         }
 
-        public static void UpdateRecord()
+        public static void UpdateRecord(bool IsSessionValidated, CodingSessionModel record)
         {
-            Console.WriteLine("enter the id of record you want to update:");
-            if (ValidateSessionId())
+
+            if (IsSessionValidated)
             {
-                ValidateInput();
                 using (SQLiteConnection connection = new SQLiteConnection(connectionString))
                 {
                     connection.Open();
                     string sql = @"UPDATE CodingTracker SET StartTime = @StartTime, EndTime = @EndTime, Duration = @Duration, CodingDate = @CodingDate WHERE Id = @Id";
 
                     int rowsAffected = connection.Execute(sql, new
-                    { 
-                        StartTime = StartTime.ToString(),
-                        EndTime = EndTime.ToString(),
-                        Duration = Duration.ToString(),
-                        CodingDate = Date.ToString(),
-                        Id = id
+                    {
+                        record.StartTime,
+                        record.EndTime,
+                        record.Duration,
+                        record.CodingDate,
+                        record.Id
+                        //StartTime = record.StartTime,
+                        //EndTime = record.EndTime,
+                        //Duration = record.Duration,
+                        //CodingDate = record.CodingDate,
+                        //Id = record.Id
                     });
-
-                    Console.WriteLine($"{rowsAffected} rows updated.");
-
                     connection.Close();
                 }
-            }   
+            }
+                
+               
         }
 
         public static void CreateDatabase()
@@ -110,28 +102,41 @@ namespace CodingTracker
             }
         }
 
-        public static bool ValidateSessionId()
+        public static bool IsDatabaseEmpty()
         {
-            var input = Console.ReadLine();
+         
             using (SQLiteConnection connection = new SQLiteConnection(connectionString))
             {
                 connection.Open();
-                while (!int.TryParse(input, out id))
-                {
-                    Console.WriteLine("Invalid input pls enter integer value.");
-                    input = Console.ReadLine();
-                }
+
+                int rowCount = connection.ExecuteScalar<int>("SELECT COUNT(*) FROM CodingTracker");
+
+                if (rowCount == 0)         
+                    return true;                   
+                else                    
+                    return false;                   
+                connection.Close();
+            }
+            return false;
+           
+        }
+
+        public static bool IsGivenSessionIdPresent(int id)
+        {
+            using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+            {
+                connection.Open();
+
                 count = connection.ExecuteScalar<int>("SELECT COUNT(*) FROM CodingTracker WHERE Id = @Id", new { Id = id });
                 connection.Close();
             }
             if (count <= 0)
             {
-                Console.WriteLine("The given id is not present in the database. Press any key to continue.");
-                Console.ReadLine();
+                //Console.WriteLine("The given id is not present in the database. Press any key to continue.");
+                //Console.ReadLine();
                 return false;
             }
             return true;
-
         }
     }
 }
