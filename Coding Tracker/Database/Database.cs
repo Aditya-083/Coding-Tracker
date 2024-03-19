@@ -61,11 +61,6 @@ namespace CodingTracker
                         record.Duration,
                         record.CodingDate,
                         record.Id
-                        //StartTime = record.StartTime,
-                        //EndTime = record.EndTime,
-                        //Duration = record.Duration,
-                        //CodingDate = record.CodingDate,
-                        //Id = record.Id
                     });
                     connection.Close();
                 }

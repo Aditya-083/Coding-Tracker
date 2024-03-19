@@ -77,7 +77,7 @@ namespace CodingTracker
 
         public static bool ValidateDate(string date)
         {
-            if (TryParseDate(UserInput, out Date))
+            if (TryParseDate(date, out Date))
                 return true;
             return false;
         }

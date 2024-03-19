@@ -29,12 +29,14 @@ namespace CodingTracker
                     case "2":
                         id = Display.DeleteRecord();
                         iSGivenSessionIdPresent = Database.IsGivenSessionIdPresent(id);
+                        Display.DisplayNoRecord(iSGivenSessionIdPresent);
                         Database.DeleteRecord(id, iSGivenSessionIdPresent);
                         break;
                     case "3":
                         id = Display.UpdateRecord();
                         iSGivenSessionIdPresent = Database.IsGivenSessionIdPresent(id);
-                        model = Display.GetRecord();
+                        Display.DisplayNoRecord(iSGivenSessionIdPresent);
+                        model = Display.GetRecord(iSGivenSessionIdPresent);
                         Database.UpdateRecord(iSGivenSessionIdPresent, model);
                         break;
                     case "4":
