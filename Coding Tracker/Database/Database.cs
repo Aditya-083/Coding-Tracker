@@ -6,9 +6,8 @@ namespace CodingTracker
 {
     internal class Database
     {
-        public static int count;
         protected static string connectionString;
-        public static IEnumerable<CodingSessionModel> ViewRecords()
+        public static IEnumerable<CodingSessionModel> ViewSessionRecords()
         {
             using (SQLiteConnection connection = new SQLiteConnection(connectionString))
             {
@@ -24,21 +23,21 @@ namespace CodingTracker
             using (SQLiteConnection connection = new SQLiteConnection(connectionString))
             {
                 connection.Open();
-                connection.Execute("INSERT INTO CodingTracker(StartTime, EndTime, Duration, CodingDate) VALUES (@StartTime, @EndTime, @Duration, @Date)",
-                new { StartTime = record.StartTime.ToString(), EndTime = record.EndTime.ToString(), Duration = record.Duration.ToString(), Date = record.CodingDate.ToString() });
+                connection.Execute("INSERT INTO CodingTracker(SessionStartTime, SessionEndTime, SessionDuration, SessionCodingDate) VALUES (@SessionStartTime, @SessionEndTime, @SessionDuration, @SessionCodingDate)",
+                new { SessionStartTime = record.SessionStartTime.ToString(), SessionEndTime = record.SessionEndTime.ToString(), SessionDuration = record.SessionDuration.ToString(), SessionCodingDate = record.SessionCodingDate.ToString() });
 
                 connection.Close();
             }
         }
 
-        public static void DeleteRecord(int id, bool IsSessionValidated)
+        public static void DeleteRecord(int SessionIdToBeDeleted, bool IsSessionValidated)
         {
             if (IsSessionValidated)
             {
                 using (SQLiteConnection connection = new SQLiteConnection(connectionString))
                 {
                     connection.Open();
-                    connection.Execute("DELETE FROM CodingTracker WHERE Id = @id", new { id });
+                    connection.Execute("DELETE FROM CodingTracker WHERE SessionId = @SessionIdToBeDeleted", new { SessionIdToBeDeleted });
                     connection.Close();
                 }
             }
@@ -52,15 +51,15 @@ namespace CodingTracker
                 using (SQLiteConnection connection = new SQLiteConnection(connectionString))
                 {
                     connection.Open();
-                    string sql = @"UPDATE CodingTracker SET StartTime = @StartTime, EndTime = @EndTime, Duration = @Duration, CodingDate = @CodingDate WHERE Id = @Id";
+                    string sql = @"UPDATE CodingTracker SET SessionStartTime = @SessionStartTime, SessionEndTime = @SessionEndTime, SessionDuration = @SessionDuration, SessionCodingDate = @SessionCodingDate WHERE SessionId = @SessionId";
 
                     int rowsAffected = connection.Execute(sql, new
                     {
-                        record.StartTime,
-                        record.EndTime,
-                        record.Duration,
-                        record.CodingDate,
-                        record.Id
+                        record.SessionStartTime,
+                        record.SessionEndTime,
+                        record.SessionDuration,
+                        record.SessionCodingDate,
+                        record.SessionId
                     });
                     connection.Close();
                 }
@@ -84,7 +83,7 @@ namespace CodingTracker
                     {
                         connection.Open();
                   
-                        connection.Execute(@"CREATE TABLE CodingTracker (Id INTEGER PRIMARY KEY, StartTime TEXT, EndTime TEXT, Duration TEXT,CodingDate TEXT)");
+                        connection.Execute(@"CREATE TABLE CodingTracker (SessionId INTEGER PRIMARY KEY, SessionStartTime TEXT, SessionEndTime TEXT, SessionDuration TEXT,SessionCodingDate TEXT)");
 
                         connection.Close();
                     }
@@ -116,19 +115,19 @@ namespace CodingTracker
            
         }
 
-        public static bool IsGivenSessionIdPresent(int id)
+        public static bool IsGivenSessionIdPresent(int SessionId)
+
         {
+            int count;
             using (SQLiteConnection connection = new SQLiteConnection(connectionString))
             {
                 connection.Open();
 
-                count = connection.ExecuteScalar<int>("SELECT COUNT(*) FROM CodingTracker WHERE Id = @Id", new { Id = id });
+                count = connection.ExecuteScalar<int>("SELECT COUNT(*) FROM CodingTracker WHERE SessionId = @Id", new { Id = SessionId });
                 connection.Close();
             }
             if (count <= 0)
             {
-                //Console.WriteLine("The given id is not present in the database. Press any key to continue.");
-                //Console.ReadLine();
                 return false;
             }
             return true;

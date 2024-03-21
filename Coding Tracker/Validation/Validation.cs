@@ -5,12 +5,8 @@ namespace CodingTracker
 {
     internal class Validation
     {
-       
-        protected static int id, count;
-        protected static TimeOnly StartTime, EndTime,Time;
-        protected static TimeSpan Duration;
-        protected static DateOnly Date;
-        protected static string UserInput;
+        private static int UserInputSessionId;
+        private static TimeOnly StartSessionTime, EndSessionTime;
         public static bool TryParseTime(string input, out TimeOnly time)
         {
             time = default;
@@ -36,57 +32,62 @@ namespace CodingTracker
             return false;
         }
 
-        public static TimeSpan CalculateTimeSpan(TimeOnly startTime, TimeOnly endTime)
+        public static TimeSpan CalculateTimeSpan(TimeOnly StartSessionTime, TimeOnly EndSessionTime)
         {
             // Convert TimeOnly to DateTime for calculation
-            DateTime startDateTime = DateTime.Today.Add(startTime.ToTimeSpan());
-            DateTime endDateTime = DateTime.Today.Add(endTime.ToTimeSpan());
+            DateTime startDateTime = DateTime.Today.Add(StartSessionTime.ToTimeSpan());
+            DateTime endDateTime = DateTime.Today.Add(EndSessionTime.ToTimeSpan());
 
             // Calculate TimeSpan
             TimeSpan duration = endDateTime - startDateTime;
             return duration;
         }
 
-        public static bool ValidateStartTime(string time)
+        public static bool ValidateStartSessionTime(string time)
         {
-            if (TryParseTime(time, out Time))
+            if (TryParseTime(time, out TimeOnly Time))
             {
-                StartTime = Time;
+                StartSessionTime = Time;
                 return true;
             }
             return false;
         }
 
-        public static bool ValidateEndTime(string time)
+        public static bool ValidateEndSessionTime(string time)
         {
-            if (TryParseTime(time, out Time))
+            if (TryParseTime(time, out TimeOnly Time))
             {
-                if (Time > StartTime)
+                if (Time > StartSessionTime)
                 {
-                    EndTime = Time;
+                    EndSessionTime = Time;
                     return true;
                 }
             }
             return false;
         }
 
-        public static string TotalTime()
+        public static string SessionTotalTime()
         {
-            return CalculateTimeSpan(StartTime, EndTime).ToString();
+            return CalculateTimeSpan(StartSessionTime, EndSessionTime).ToString();
         }
 
-        public static bool ValidateDate(string date)
+        public static bool ValidateInputDate(string date)
         {
-            if (TryParseDate(date, out Date))
+            if (TryParseDate(date, out DateOnly Date))
                 return true;
             return false;
         }
 
-        public static bool ValidateInteger(string SessionId)
+        public static bool ValidateInputInteger(string SessionId)
         {
-            if (int.TryParse(SessionId, out id))
+            if (int.TryParse(SessionId, out UserInputSessionId)) 
                 return true;
             return false;
+        }
+
+        public static int ReturnSessionID()
+        {
+            return UserInputSessionId;
         }
     }
 }

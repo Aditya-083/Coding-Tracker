@@ -6,10 +6,6 @@ namespace CodingTracker
     {
         public static void Menu()
         {
-            bool iSGivenSessionIdPresent;
-            int id;
-            CodingSessionModel model;
-            IEnumerable<CodingSessionModel> results;
             var isTrackerOn = true;
             do
             {
@@ -19,32 +15,32 @@ namespace CodingTracker
                 switch(selection)
                 {
                     case "0":
-                        results = Database.ViewRecords();
+                        IEnumerable<CodingSessionModel> results = Database.ViewSessionRecords();
                         Display.ViewRecords(results);
                         break;
                     case "1":
-                        model = Display.GetRecord();
-                        Database.InsertRecord(model);
+                        CodingSessionModel UserSessionInput = Display.GetRecord();
+                        Database.InsertRecord(UserSessionInput);
                         break;
                     case "2":
-                        id = Display.DeleteRecord();
-                        iSGivenSessionIdPresent = Database.IsGivenSessionIdPresent(id);
-                        Display.DisplayNoRecord(iSGivenSessionIdPresent);
-                        Database.DeleteRecord(id, iSGivenSessionIdPresent);
+                        int SessionDeleteId = Display.GetSessionIdToDeleteRecord();
+                        bool IsGivenIdPresent = Database.IsGivenSessionIdPresent(SessionDeleteId);
+                        Display.DisplayNoRecordMessage(IsGivenIdPresent);
+                        Database.DeleteRecord(SessionDeleteId, IsGivenIdPresent);
                         break;
                     case "3":
-                        id = Display.UpdateRecord();
-                        iSGivenSessionIdPresent = Database.IsGivenSessionIdPresent(id);
-                        Display.DisplayNoRecord(iSGivenSessionIdPresent);
-                        model = Display.GetRecord(iSGivenSessionIdPresent);
-                        Database.UpdateRecord(iSGivenSessionIdPresent, model);
+                        int SessionUpdateId = Display.GetSessionIdToUpdateRecord();
+                        bool IsGivenIdToUpdatePresent = Database.IsGivenSessionIdPresent(SessionUpdateId);
+                        Display.DisplayNoRecordMessage(IsGivenIdToUpdatePresent);
+                        CodingSessionModel UserUpdatedInput = Display.GetRecord(IsGivenIdToUpdatePresent);
+                        Database.UpdateRecord(IsGivenIdToUpdatePresent, UserUpdatedInput);
                         break;
                     case "4":
-                        Display.GoodBye();                
+                        Display.ExitApplicationMessage();                
                         isTrackerOn = false;
                         break;
                     default:
-                        Display.InvalidInput();
+                        Display.InvalidInputMessage();
                         break;
                 }
 
