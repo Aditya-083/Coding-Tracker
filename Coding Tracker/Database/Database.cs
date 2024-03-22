@@ -43,7 +43,7 @@ namespace CodingTracker
             }
         }
 
-        public static void UpdateRecord(bool IsSessionValidated, CodingSessionModel record)
+        public static void UpdateRecord(bool IsSessionValidated, CodingSessionModel record, int SessionUpdateId)
         {
 
             if (IsSessionValidated)
@@ -59,7 +59,7 @@ namespace CodingTracker
                         record.SessionEndTime,
                         record.SessionDuration,
                         record.SessionCodingDate,
-                        record.SessionId
+                        SessionId = SessionUpdateId
                     });
                     connection.Close();
                 }
@@ -132,5 +132,6 @@ namespace CodingTracker
             }
             return true;
         }
+
     }
 }

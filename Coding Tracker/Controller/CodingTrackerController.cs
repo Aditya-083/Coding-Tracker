@@ -33,7 +33,7 @@ namespace CodingTracker
                         bool IsGivenIdToUpdatePresent = Database.IsGivenSessionIdPresent(SessionUpdateId);
                         Display.DisplayNoRecordMessage(IsGivenIdToUpdatePresent);
                         CodingSessionModel UserUpdatedInput = Display.GetRecord(IsGivenIdToUpdatePresent);
-                        Database.UpdateRecord(IsGivenIdToUpdatePresent, UserUpdatedInput);
+                        Database.UpdateRecord(IsGivenIdToUpdatePresent, UserUpdatedInput, SessionUpdateId);
                         break;
                     case "4":
                         Display.ExitApplicationMessage();                
