@@ -25,10 +25,13 @@ namespace CodingTracker
 
             if (DateTime.TryParseExact(input, "yyyy-MM-dd", null, System.Globalization.DateTimeStyles.None, out DateTime parsedDate))
             {
-                date = DateOnly.FromDateTime(parsedDate);
-                return true;
+                if (parsedDate <= DateTime.Now.Date) // Check if parsed date is not greater than current date
+                {
+                    date = DateOnly.FromDateTime(parsedDate);
+                    return true;
+                }                                     
+                
             }
-
             return false;
         }
 
